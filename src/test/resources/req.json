@@ -1,0 +1,36 @@
+{
+  "messages": [
+    {
+      "id_sample": "76rtw",
+      "num_id": "ffg#er111",
+      "id_location": "311.233",
+      "id_signal_par": "0xcv11cs",
+      "id_detected": "None",
+      "id_class_det": "req11"
+    },
+    {
+      "id_sample": "76rtw",
+      "num_id": "ffg#er111",
+      "id_location": "Бийск",
+      "id_signal_par": "0xcv11cs",
+      "id_detected": "None",
+      "id_class_det": "req11"
+    },
+    {
+      "id_sample": "76rtw",
+      "num_id": "ffg#er111",
+      "id_location": "3211.2334",
+      "id_signal_par": "0xcv11cs",
+      "id_detected": "None",
+      "id_class_det": "req11"
+    },
+    {
+      "id_sample": "76rtw",
+      "num_id": "ffg#er111",
+      "id_location": "Омск",
+      "id_signal_par": "0xcv11cs",
+      "id_detected": "Nan",
+      "id_class_det": "req11"
+    }
+  ]
+}
