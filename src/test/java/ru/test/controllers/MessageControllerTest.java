@@ -26,14 +26,14 @@ class MessageControllerTest extends AbstractControllerTest {
     private Map<String, String> jsonFilesMap;
 
     private Pair<String, String> apply(Path path) {
-            try {
-                byte[] bytes = Files.readAllBytes(path);
-                String json = new String(bytes, StandardCharsets.UTF_8);
-                String fileName = path.toFile().getName();
-                return Pair.of(fileName, json);
-            } catch (IOException e) {
-                throw new RuntimeException();
-            }
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            String json = new String(bytes, StandardCharsets.UTF_8);
+            String fileName = path.toFile().getName();
+            return Pair.of(fileName, json);
+        } catch (IOException e) {
+            throw new RuntimeException();
+        }
     }
 
     @BeforeEach
@@ -46,8 +46,8 @@ class MessageControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * input and output validation
-     * */
+     * input 100k messages and output validation
+     */
     @Test
     void aggregateMessagesTest() throws Exception {
         ResultActions resultActions = mockMvc.perform(post(REST_URL)
@@ -57,7 +57,20 @@ class MessageControllerTest extends AbstractControllerTest {
 
         AggregateMessages aggregateMessages = readFromJsonResultActions(resultActions, AggregateMessages.class);
         Assertions.assertThat(aggregateMessages).isNotNull();
+        Assertions.assertThat(aggregateMessages.getCountEventsWithBreakdowns()).isEqualTo(50_000);
+        Assertions.assertThat(aggregateMessages.getCountEventsWithoutBreakdowns()).isEqualTo(50_000);
         Assertions.assertThat(aggregateMessages.getAggregateMap().size()).isEqualTo(3);
+    }
+
+    /**
+     * test for empty json objects
+     * */
+    @Test
+    void emptyJsonTest() throws Exception {
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.jsonFilesMap.get("messagesEmpty.json")))
+                .andExpect(status().is5xxServerError());
     }
 
     @Test
