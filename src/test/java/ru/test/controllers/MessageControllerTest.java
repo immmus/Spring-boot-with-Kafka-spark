@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
@@ -38,7 +39,7 @@ class MessageControllerTest extends AbstractControllerTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        Path path = Path.of("src/test/resources/");
+        Path path = Paths.get("src/test/resources/");
         this.jsonFilesMap = Files.walk(path)
                 .filter(file -> file.toFile().getName().matches(".*\\.json"))
                 .map(this::apply)
