@@ -16,9 +16,9 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AggregateMessages {
     @JsonProperty("count_with_breakdowns")
-    private int countEventsWithBreakdowns;
+    private long countEventsWithBreakdowns;
     @JsonProperty("count_without_breakdowns")
-    private int countEventsWithoutBreakdowns;
+    private long countEventsWithoutBreakdowns;
     @JsonProperty("messages")
     private Map<String, ? extends Iterable<Message>> aggregateMap;
 }
