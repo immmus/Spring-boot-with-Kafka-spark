@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Profile("SPARK")
-public @interface Spark {
-    String profile = "SPARK";
+@Profile("SparkStream")
+public @interface SparkStreaming {
+    String profile = "SparkStream";
 }

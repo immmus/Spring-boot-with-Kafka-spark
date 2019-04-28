@@ -2,22 +2,25 @@ package ru.immmus.service;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.immmus.AggregateMessages;
 import ru.immmus.Message;
 import ru.immmus.MessageService;
 import ru.immmus.Messages;
-import ru.immmus.profiles.Spark;
+import ru.immmus.profiles.SparkRDD;
 
 import java.util.List;
 import java.util.Map;
 
-@Spark
+@SparkRDD
 @Service("sparkRDDService")
 public class SparkMessageService implements MessageService {
     private final JavaSparkContext sc;
 
-    public SparkMessageService(JavaSparkContext sc) {
+    @Autowired
+    public SparkMessageService(@Qualifier("rddSparkContext") JavaSparkContext sc) {
         this.sc = sc;
     }
 

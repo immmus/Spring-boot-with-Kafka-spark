@@ -1,15 +1,15 @@
 package ru.immmus.config;
 
-import kafka.admin.ConsumerGroupCommand;
-import kafka.admin.TopicCommand;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.KafkaAdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.zookeeper.server.NIOServerCnxnFactory;
 import org.apache.zookeeper.server.ServerCnxnFactory;
 import org.apache.zookeeper.server.ZooKeeperServer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -20,14 +20,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.CommonClientConfigs.CLIENT_ID_CONFIG;
 
 @Configuration
 @EmbeddedKafka
 @PropertySource("classpath:kafkaEmbedded.properties")
-@EnableAutoConfiguration
 public class KafkaConfigEmbedded implements KafkaConfiguration {
-
     @Value("${kafka.topic}")
     private String topic;
     @Value("${kafka.host}")
@@ -39,7 +44,7 @@ public class KafkaConfigEmbedded implements KafkaConfiguration {
     @Value("${zookeeper.host}")
     private String zookeeperHost;
     @Value("${zookeeper.port}")
-    private int zookeeperPost;
+    private int zookeeperPort;
     @Value("#{'${zookeeper.host}'+':'+'${zookeeper.port}'}")
     private String zookeeperAddress;
 
@@ -49,11 +54,10 @@ public class KafkaConfigEmbedded implements KafkaConfiguration {
         File logDir = Files.createTempDirectory("zookeeper-logs").toFile();
         snapshotDir.deleteOnExit();
         logDir.deleteOnExit();
-
         int tickTime = 500;
         ZooKeeperServer server = new ZooKeeperServer(snapshotDir, logDir, tickTime);
         ServerCnxnFactory factory = NIOServerCnxnFactory.createFactory();
-        factory.configure(new InetSocketAddress(zookeeperHost, zookeeperPost), 16);
+        factory.configure(new InetSocketAddress(zookeeperHost, zookeeperPort), 16);
         factory.startup(server);
         return factory;
     }
@@ -64,31 +68,38 @@ public class KafkaConfigEmbedded implements KafkaConfiguration {
         File logDir = Files.createTempDirectory("kafka").toFile();
         logDir.deleteOnExit();
         Properties properties = new Properties();
-        properties.put("zookeeper.connect", zookeeperAddress);
-        properties.put("broker.id", "1");
-        properties.put("host.name", brokerHost);
-        properties.put("port", brokerPort);
-        properties.setProperty("log.dir", logDir.getAbsolutePath());
-        properties.setProperty("log.flush.interval.messages", String.valueOf(1));
-
+        properties.put(KafkaConfig.ZkConnectProp(), zookeeperAddress);
+        properties.put(KafkaConfig.BrokerIdProp(), "1");
+        properties.put(KafkaConfig.ListenersProp(),
+                String.format("PLAINTEXT://%s:%s", brokerHost, brokerPort));
+        properties.put(KafkaConfig.OffsetsTopicReplicationFactorProp(), String.valueOf(1));
+        properties.put(KafkaConfig.LogDirProp(), logDir.getAbsolutePath());
+        properties.put(KafkaConfig.LogFlushIntervalMessagesProp(), String.valueOf(1));
         return new KafkaServerStartable(new KafkaConfig(properties));
     }
 
-    @Bean(name = "topic")
+    @Bean(name = "adminClient")
     @DependsOn("kafkaServerStartable")
-    public String crateTopic() {
-        String[] arguments = new String[9];
-        arguments[0] = "--create";
-        arguments[1] = "--zookeeper";
-        arguments[2] = zookeeperAddress;
-        arguments[3] = "--replication-factor";
-        arguments[4] = "1";
-        arguments[5] = "--partitions";
-        arguments[6] = "1";
-        arguments[7] = "--topic";
-        arguments[8] = topic;
-        TopicCommand.main(arguments);
+    public String createTopic() {
+        final short replicationFactor = 1;
+        try(final AdminClient adminClient = KafkaAdminClient.create(buildDefaultClientConfig())) {
+            final NewTopic newTopic = new NewTopic(topic, 1, replicationFactor);
+            // Create topic, which is async call.
+            CreateTopicsResult topicsResult  = adminClient.createTopics(Collections.singleton(newTopic));
+
+            // Since the call is Async, Lets wait for it to complete.
+            topicsResult.values().get(topic).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
         return topic;
+    }
+
+    private Map<String, Object> buildDefaultClientConfig() {
+        Map<String, Object> defaultClientConfig = new HashMap<>();
+        defaultClientConfig.put(BOOTSTRAP_SERVERS_CONFIG, getBrokerAddress());
+        defaultClientConfig.put(CLIENT_ID_CONFIG, "test-consumer-id");
+        return defaultClientConfig;
     }
 
     @Override

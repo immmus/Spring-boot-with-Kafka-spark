@@ -16,11 +16,13 @@
         <!-- Logging -->
         <slf4j.version>1.7.26</slf4j.version>
         <logback-classic.version>1.2.3</logback-classic.version>
+        <!--Kafka-->
+        <spring.kafka.version>2.2.5.RELEASE</spring.kafka.version>
+        <apache.kafka.version>2.2.0</apache.kafka.version>
 
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <lombok.version>1.18.4</lombok.version>
         <fasterxml.jackson.core.version>2.9.8</fasterxml.jackson.core.version>
-        <apache.kafka.version>2.2.0</apache.kafka.version>
     </properties>
 
     <dependencies>

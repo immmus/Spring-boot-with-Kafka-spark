@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.util.NestedServletException;
 import ru.immmus.AggregateMessages;
 import ru.immmus.profiles.Common;
-import ru.immmus.profiles.Spark;
+import ru.immmus.profiles.SparkRDD;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.immmus.TestUtils.readFromJsonResultActions;
 
-@ActiveProfiles(Spark.profile)
+@ActiveProfiles(SparkRDD.profile)
 class SparkProfileMessageController extends AbstractMessageControllerTest{}
 @ActiveProfiles(Common.profile)
 class CommonProfileMessageController  extends AbstractMessageControllerTest{}

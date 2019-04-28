@@ -5,7 +5,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.immmus.profiles.Spark;
+import ru.immmus.profiles.SparkRDD;
 
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -16,6 +16,6 @@ public class AbstractControllerTest {
     private Environment env;
 
     boolean isSpark(){
-        return env.acceptsProfiles(org.springframework.core.env.Profiles.of(Spark.profile));
+        return env.acceptsProfiles(org.springframework.core.env.Profiles.of(SparkRDD.profile));
     }
 }
