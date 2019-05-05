@@ -2,6 +2,7 @@ package ru.immmus.config;
 
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.CLIENT_ID_CONFIG;
 
+@Slf4j
 @Configuration
 @EmbeddedKafka
 @PropertySource("classpath:kafkaEmbedded.properties")
@@ -75,7 +77,7 @@ public class KafkaConfigEmbedded implements KafkaConfiguration {
         properties.put(KafkaConfig.OffsetsTopicReplicationFactorProp(), String.valueOf(1));
         properties.put(KafkaConfig.LogDirProp(), logDir.getAbsolutePath());
         properties.put(KafkaConfig.LogFlushIntervalMessagesProp(), String.valueOf(1));
-        return new KafkaServerStartable(new KafkaConfig(properties));
+        return new KafkaServerStartable(new KafkaConfig(Collections.unmodifiableMap(properties)));
     }
 
     @Bean(name = "adminClient")
@@ -90,6 +92,7 @@ public class KafkaConfigEmbedded implements KafkaConfiguration {
             // Since the call is Async, Lets wait for it to complete.
             topicsResult.values().get(topic).get();
         } catch (InterruptedException | ExecutionException e) {
+            log.error("Don't created admin client. ");
             throw new RuntimeException(e.getMessage(), e);
         }
         return topic;
@@ -99,7 +102,7 @@ public class KafkaConfigEmbedded implements KafkaConfiguration {
         Map<String, Object> defaultClientConfig = new HashMap<>();
         defaultClientConfig.put(BOOTSTRAP_SERVERS_CONFIG, getBrokerAddress());
         defaultClientConfig.put(CLIENT_ID_CONFIG, "test-consumer-id");
-        return defaultClientConfig;
+        return Collections.unmodifiableMap(defaultClientConfig);
     }
 
     @Override
